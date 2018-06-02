@@ -11,6 +11,9 @@ JanuszG(małpeczka)enter.net.pl
 
 void Display()
 {
+
+
+
     // kolor tła - zawartość bufora koloru
     glClearColor( 1.0, 1.0, 1.0, 1.0 );
 
