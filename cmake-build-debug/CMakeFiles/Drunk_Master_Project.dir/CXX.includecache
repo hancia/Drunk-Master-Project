@@ -6,7 +6,9 @@
 
 #IncludeRegexTransform: 
 
-/home/pluto/Pulpit/Drunk-Master-Project/main.cpp
-iostream
+/home/pluto/Drunk-Master-Project/main.cpp
+GL/glut.h
+-
+stdlib.h
 -
 

@@ -1,1 +1,1 @@
-/usr/bin/c++  -g   CMakeFiles/Drunk_Master_Project.dir/main.cpp.o  -o Drunk_Master_Project 
+/usr/bin/c++  -g   CMakeFiles/Drunk_Master_Project.dir/main.cpp.o  -o Drunk_Master_Project /usr/lib/x86_64-linux-gnu/libGL.so /usr/lib/x86_64-linux-gnu/libGLU.so /usr/lib/x86_64-linux-gnu/libglut.so /usr/lib/x86_64-linux-gnu/libXmu.so /usr/lib/x86_64-linux-gnu/libXi.so 

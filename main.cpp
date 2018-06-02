@@ -1,110 +1,72 @@
-/*
-(c) Janusz Ganczarski (Power)
-http://www.januszg.hg.pl
-JanuszG(małpeczka)enter.net.pl
-*/
-
 #include <GL/glut.h>
 #include <stdlib.h>
 
-// funkcja generująca scenę 3D
+enum{
+    WIRE_SPHERE,
+};
 
-void Display()
-{
+int object = WIRE_SPHERE;
 
+const GLdouble left = - 10.0;
+const GLdouble right = 10.0;
+const GLdouble bottom = - 10.0;
+const GLdouble top = 10.0;
+const GLdouble near = 50.0;
+const GLdouble far = 70.0;
 
+GLfloat scale = 1.0;
 
-    // kolor tła - zawartość bufora koloru
+GLfloat rotatex = 0.0;
+GLfloat rotatey = 0.0;
+
+GLfloat translatex = 0.0;
+GLfloat translatey = 0.0;
+
+void Display(){
     glClearColor( 1.0, 1.0, 1.0, 1.0 );
-
-    // czyszczenie bufora koloru
     glClear( GL_COLOR_BUFFER_BIT );
+    glMatrixMode( GL_MODELVIEW );
+    glLoadIdentity();
 
-    // kolor kwadratu
-    glColor3f( 1.0, 0.0, 0.0 );
+    glTranslatef( 0, 0, -( near + far ) / 2 );
+    glTranslatef( translatex, translatey, 0.0 );
+    glScalef( scale, scale, scale );
 
-    // początek definicji wielokąta
-    glBegin( GL_POLYGON );
+    glRotatef( rotatex, 1.0, 0, 0 );
+    glRotatef( rotatey, 0, 1.0, 0 );
 
-    // kolejne wierzchołki wielokąta
-    glVertex3f( 0.0, 0.0, 0.0 );
-    glVertex3f( 0.0, 1.0, 0.0 );
-    glVertex3f( 1.0, 1.0, 0.0 );
-    glVertex3f( 1.0, 0.0, 0.0 );
+    glColor3f( 0.0, 0.0, 0.0 );
 
-    // koniec definicji prymitywu
-    glEnd();
+    switch( object ){
 
-    // skierowanie poleceń do wykonania
+        case WIRE_SPHERE:
+            glutWireSphere( 1.0, 20, 10 );
+            break;
+
+    }
+
     glFlush();
-
-    // zamiana buforów koloru
     glutSwapBuffers();
 }
 
-// zmiana wielkości okna
-
-void Reshape( int width, int height )
-{
-    // generowanie sceny 3D
+void Reshape( int width, int height ){
+    glViewport( 0, 0, width, height );
+    glMatrixMode( GL_PROJECTION );
+    glLoadIdentity();
+    glFrustum( left, right, bottom, top, near, far );
     Display();
 }
 
-// stałe do obsługi menu podręcznego
-
-enum
-{
-    EXIT // wyjście
-};
-
-// obsługa menu podręcznego
-
-void Menu( int value )
-{
-    switch( value )
-    {
-        // wyjście
-        case EXIT:
-            exit( 0 );
-    }
-}
-
-int main( int argc, char * argv[] )
-{
-    // inicjalizacja biblioteki GLUT
+int main( int argc, char * argv[] ){
     glutInit( & argc, argv );
-
-    // inicjalizacja bufora ramki
     glutInitDisplayMode( GLUT_DOUBLE | GLUT_RGB );
+    glutInitWindowSize( 1024, 768 );
 
-    // rozmiary głównego okna programu
-    glutInitWindowSize( 400, 400 );
+    glutCreateWindow( "DRUNKMASTER" );
 
-    // utworzenie głównego okna programu
-    glutCreateWindow( "Kwadrat 1" );
-
-    // dołączenie funkcji generującej scenę 3D
     glutDisplayFunc( Display );
-
-    // dołączenie funkcji wywoływanej przy zmianie rozmiaru okna
     glutReshapeFunc( Reshape );
 
-    // utworzenie menu podręcznego
-    glutCreateMenu( Menu );
-
-    // dodatnie pozycji do menu podręcznego
-#ifdef WIN32
-
-    glutAddMenuEntry( "Wyjście", EXIT );
-#else
-
-    glutAddMenuEntry( "Wyjscie", EXIT );
-#endif
-
-    // określenie przycisku myszki obsługującej menu podręczne
-    glutAttachMenu( GLUT_RIGHT_BUTTON );
-
-    // wprowadzenie programu do obsługi pętli komunikatów
     glutMainLoop();
     return 0;
 }

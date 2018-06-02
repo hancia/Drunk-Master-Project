@@ -4,7 +4,7 @@ set(CMAKE_DEPENDS_LANGUAGES
   )
 # The set of files for implicit dependencies of each language:
 set(CMAKE_DEPENDS_CHECK_CXX
-  "/home/pluto/Pulpit/Drunk-Master-Project/main.cpp" "/home/pluto/Pulpit/Drunk-Master-Project/cmake-build-debug/CMakeFiles/Drunk_Master_Project.dir/main.cpp.o"
+  "/home/pluto/Drunk-Master-Project/main.cpp" "/home/pluto/Drunk-Master-Project/cmake-build-debug/CMakeFiles/Drunk_Master_Project.dir/main.cpp.o"
   )
 set(CMAKE_CXX_COMPILER_ID "GNU")
 
