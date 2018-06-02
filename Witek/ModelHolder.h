@@ -16,7 +16,7 @@
 #include "allmodels.h"
 #include "lodepng.h"
 #include "shaderprogram.h"
-#include "OpenGlFunctions.h"
+//#include "OpenGlFunctions.h"
 
 using namespace glm;
 

@@ -1,4 +1,4 @@
-#include "ModelHolder.h"
+﻿#include "ModelHolder.h"
 
 ModelHolder::ModelHolder()
 {
@@ -9,10 +9,10 @@ ModelHolder::ModelHolder()
     this->texCoords = nullptr;
     this->colors = nullptr;
 
-    //this->loadModel("test2.obj","metal.png","metal_spec.png");
+    //this->loadModel("bottle.obj","metal.png","metal_spec.png");
 
     /*std::cout<<"hello there"<<std::endl;
-    if(loadFromOBJ("test2.obj")){
+    if(loadFromOBJ("bottle.obj")){
         std::cout<<"yep"<<std::endl;
     } else {
         std::cout<<"nope"<<std::endl;

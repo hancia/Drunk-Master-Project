@@ -26,7 +26,10 @@ Place, Fifth Floor, Boston, MA  02110 - 1301  USA
 #include <glm/gtc/matrix_transform.hpp>
 #include <stdlib.h>
 #include <stdio.h>
+#include <iostream>
+#include <string>
 #include "constants.h"
+#include "parser.h"
 #include "allmodels.h"
 #include "lodepng.h"
 #include "shaderprogram.h"
