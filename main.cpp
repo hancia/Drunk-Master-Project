@@ -1,110 +1,85 @@
-/*
-(c) Janusz Ganczarski (Power)
-http://www.januszg.hg.pl
-JanuszG(małpeczka)enter.net.pl
-*/
+#include<GL/gl.h>
+#include<GL/glut.h>
+#include<stdio.h>
 
-#include <GL/glut.h>
-#include <stdlib.h>
 
-// funkcja generująca scenę 3D
+GLuint bottle;
 
-void Display()
+void loadObj(char *fname)
 {
-
-
-
-    // kolor tła - zawartość bufora koloru
-    glClearColor( 1.0, 1.0, 1.0, 1.0 );
-
-    // czyszczenie bufora koloru
-    glClear( GL_COLOR_BUFFER_BIT );
-
-    // kolor kwadratu
-    glColor3f( 1.0, 0.0, 0.0 );
-
-    // początek definicji wielokąta
-    glBegin( GL_POLYGON );
-
-    // kolejne wierzchołki wielokąta
-    glVertex3f( 0.0, 0.0, 0.0 );
-    glVertex3f( 0.0, 1.0, 0.0 );
-    glVertex3f( 1.0, 1.0, 0.0 );
-    glVertex3f( 1.0, 0.0, 0.0 );
-
-    // koniec definicji prymitywu
-    glEnd();
-
-    // skierowanie poleceń do wykonania
-    glFlush();
-
-    // zamiana buforów koloru
-    glutSwapBuffers();
-}
-
-// zmiana wielkości okna
-
-void Reshape( int width, int height )
-{
-    // generowanie sceny 3D
-    Display();
-}
-
-// stałe do obsługi menu podręcznego
-
-enum
-{
-    EXIT // wyjście
-};
-
-// obsługa menu podręcznego
-
-void Menu( int value )
-{
-    switch( value )
+    FILE *fp;
+    int read;
+    GLfloat x, y, z;
+    char ch;
+    bottle=glGenLists(1);
+    fp=fopen(fname,"r");
+    if (!fp)
     {
-        // wyjście
-        case EXIT:
-            exit( 0 );
+        printf("can't open file %s\n", fname);
+        exit(1);
     }
+    glPointSize(2.0);
+    glNewList(bottle, GL_COMPILE);
+    {
+        glPushMatrix();
+        glBegin(GL_POINTS);
+        while(!(feof(fp)))
+        {
+            read=fscanf(fp,"%c %f %f %f",&ch,&x,&y,&z);
+            if(read==4&&ch=='v')
+            {
+                glVertex3f(x,y,z);
+            }
+        }
+        glEnd();
+    }
+    glPopMatrix();
+    glEndList();
+    fclose(fp);
 }
 
-int main( int argc, char * argv[] )
+
+void reshape(int w,int h)
 {
-    // inicjalizacja biblioteki GLUT
-    glutInit( & argc, argv );
+    glViewport(0,0,w,h);
+    glMatrixMode(GL_PROJECTION);
+    glLoadIdentity();
+    gluPerspective (60, (GLfloat)w / (GLfloat)h, 0.1, 1000.0);
+    glMatrixMode(GL_MODELVIEW);
+}
 
-    // inicjalizacja bufora ramki
-    glutInitDisplayMode( GLUT_DOUBLE | GLUT_RGB );
+void drawBottle()
+{
+    glPushMatrix();
+    glTranslatef(0,0,-150);
+    glColor3f(0,0,0);
+    glScalef(10,10,10);
+    glRotatef(0,0,1,0);
+    glCallList(bottle);
+    glPopMatrix();
+}
 
-    // rozmiary głównego okna programu
-    glutInitWindowSize( 400, 400 );
+void display(void)
+{
+    glClearColor (1,1,1,1);
+    glClear (GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    glLoadIdentity();
+    drawBottle();
+    glutSwapBuffers();
 
-    // utworzenie głównego okna programu
-    glutCreateWindow( "Kwadrat 1" );
+}
 
-    // dołączenie funkcji generującej scenę 3D
-    glutDisplayFunc( Display );
-
-    // dołączenie funkcji wywoływanej przy zmianie rozmiaru okna
-    glutReshapeFunc( Reshape );
-
-    // utworzenie menu podręcznego
-    glutCreateMenu( Menu );
-
-    // dodatnie pozycji do menu podręcznego
-#ifdef WIN32
-
-    glutAddMenuEntry( "Wyjście", EXIT );
-#else
-
-    glutAddMenuEntry( "Wyjscie", EXIT );
-#endif
-
-    // określenie przycisku myszki obsługującej menu podręczne
-    glutAttachMenu( GLUT_RIGHT_BUTTON );
-
-    // wprowadzenie programu do obsługi pętli komunikatów
+int main(int argc,char **argv)
+{
+    glutInit(&argc,argv);
+    glutInitDisplayMode(GLUT_DOUBLE|GLUT_RGB|GLUT_DEPTH);
+    glutInitWindowSize(1200,700);
+    glutInitWindowPosition(20,20);
+    glutCreateWindow("DRUNKMASTER");
+    glutReshapeFunc(reshape);
+    glutDisplayFunc(display);
+    glutIdleFunc(display);
+    loadObj("/home/pluto/Drunk-Master-Project/models/bottle.obj"); //Nie dziala sciezka wzgledna, musisz ustawic wlasna aby uruchomic
     glutMainLoop();
     return 0;
 }
