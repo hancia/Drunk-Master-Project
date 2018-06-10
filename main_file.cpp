@@ -56,12 +56,16 @@ float* vertices=Models::CubeInternal::vertices;
 float* colors=Models::CubeInternal::colors;
 float* normals=Models::CubeInternal::normals;
 int vertexCount=Models::CubeInternal::vertexCount;*/
-vector<glm::vec4> vertices;
-vector<glm::vec2> uvs;
-vector<float> colors;
-vector<glm::vec4> normals;
+vector<glm::vec4> v_vertices;
+vector<glm::vec2> v_uvs;
+vector<glm::vec4> v_normals;
+vector<float> v_colors;
 int vertexCount;
 
+bool wynik = loadOBJ("bottle.obj",v_vertices,v_uvs,v_normals);
+float *vertices = static_cast<float*>(glm::value_ptr(v_vertices.front()));
+float *normals = static_cast<float*>(glm::value_ptr(v_normals.front()));
+float *textCoords = static_cast<float*>(glm::value_ptr(v_uvs.front()));
 
 //Czajnik
 /*float* vertices=Models::TeapotInternal::vertices;
@@ -126,9 +130,9 @@ void assignVBOtoAttribute(ShaderProgram *shaderProgram,const char* attributeName
 void prepareObject(ShaderProgram *shaderProgram) {
 	//Zbuduj VBO z danymi obiektu do narysowania
 
-	bufVertices=makeBuffer(&vertices[0],vertexCount,sizeof(vertices[0])); //VBO ze współrzędnymi wierzchołków
-	bufColors=makeBuffer(&colors[0], vertexCount, sizeof(colors[0]));//VBO z kolorami wierzchołków
-	bufNormals=makeBuffer(&normals[0], vertexCount, sizeof(normals[0]));//VBO z wektorami normalnymi wierzchołków
+	bufVertices=makeBuffer(vertices, vertexCount, sizeof(float)*4); //VBO ze współrzędnymi wierzchołków
+	//bufColors=makeBuffer(colors, vertexCount, sizeof(float)*4);//VBO z kolorami wierzchołków
+	bufNormals=makeBuffer(normals, vertexCount, sizeof(float)*4);//VBO z wektorami normalnymi wierzchołków
 
 	//Zbuduj VAO wiążący atrybuty z konkretnymi VBO
 	glGenVertexArrays(1,&vao); //Wygeneruj uchwyt na VAO i zapisz go do zmiennej globalnej
@@ -136,7 +140,7 @@ void prepareObject(ShaderProgram *shaderProgram) {
 	glBindVertexArray(vao); //Uaktywnij nowo utworzony VAO
 
 	assignVBOtoAttribute(shaderProgram,"vertex",bufVertices,4); //"vertex" odnosi się do deklaracji "in vec4 vertex;" w vertex shaderze
-	assignVBOtoAttribute(shaderProgram,"color",bufColors,4); //"color" odnosi się do deklaracji "in vec4 color;" w vertex shaderze
+	//assignVBOtoAttribute(shaderProgram,"color",bufColors,4); //"color" odnosi się do deklaracji "in vec4 color;" w vertex shaderze
 	assignVBOtoAttribute(shaderProgram,"normal",bufNormals,4); //"normal" odnosi się do deklaracji "in vec4 normal;" w vertex shaderze
 
 	glBindVertexArray(0); //Dezaktywuj VAO
@@ -145,7 +149,7 @@ void prepareObject(ShaderProgram *shaderProgram) {
 //Procedura inicjująca
 void initOpenGLProgram(GLFWwindow* window) {
 	//************Tutaj umieszczaj kod, który należy wykonać raz, na początku programu************
-	glClearColor(0, 0, 0, 1); //Czyść ekran na czarno
+	glClearColor(0, 1, 0, 1); //Czyść ekran na czarno
 	glEnable(GL_DEPTH_TEST); //Włącz używanie Z-Bufora
 	glfwSetKeyCallback(window, key_callback); //Zarejestruj procedurę obsługi klawiatury
     glfwSetFramebufferSizeCallback(window,windowResize); //Zarejestruj procedurę obsługi zmiany rozmiaru bufora ramki
@@ -226,13 +230,7 @@ void drawScene(GLFWwindow* window, float angle_x, float angle_y) {
 
 int main(void)
 {
-    loadOBJ("bottle.obj",vertices,uvs,normals);
-    for(int i=0;i<vertices.size();i++){
-        colors.push_back(1.0f);
-        cout<<vertices[i].x<<endl;
-    }
-    vertexCount = vertices.size();
-
+    vertexCount = v_vertices.size();
 	GLFWwindow* window; //Wskaźnik na obiekt reprezentujący okno
 
 	glfwSetErrorCallback(error_callback);//Zarejestruj procedurę obsługi błędów

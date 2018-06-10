@@ -37,6 +37,7 @@ bool loadOBJ(
 		if ( strcmp( lineHeader, "v" ) == 0 ){
 			glm::vec4 vertex;
 			fscanf(file, "%f %f %f\n", &vertex.x, &vertex.y, &vertex.z );
+			vertex.w = 1.0f;
 			temp_vertices.push_back(vertex);
 		}else if ( strcmp( lineHeader, "vt" ) == 0 ){
 			glm::vec2 uv;
@@ -45,6 +46,7 @@ bool loadOBJ(
 		}else if ( strcmp( lineHeader, "vn" ) == 0 ){
 			glm::vec4 normal;
 			fscanf(file, "%f %f %f\n", &normal.x, &normal.y, &normal.z );
+			normal.w = 0.0f;
 			temp_normals.push_back(normal);
 		}else if ( strcmp( lineHeader, "f" ) == 0 ){
 			std::string vertex1, vertex2, vertex3;
