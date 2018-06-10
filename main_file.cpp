@@ -26,13 +26,15 @@ Place, Fifth Floor, Boston, MA  02110 - 1301  USA
 #include <glm/gtc/matrix_transform.hpp>
 #include <stdlib.h>
 #include <stdio.h>
+#include <vector>
+#include <iostream>
 #include "constants.h"
 #include "allmodels.h"
 #include "lodepng.h"
 #include "shaderprogram.h"
-
+#include "objLoader.h"
 using namespace glm;
-
+using namespace std;
 float speed_x = 0; // [radiany/s]
 float speed_y = 0; // [radiany/s]
 
@@ -49,10 +51,17 @@ GLuint bufNormals; //Uchwyt na bufor VBO przechowujący tablickę wektorów norm
 
 
 //Kostka
+/*
 float* vertices=Models::CubeInternal::vertices;
 float* colors=Models::CubeInternal::colors;
 float* normals=Models::CubeInternal::normals;
-int vertexCount=Models::CubeInternal::vertexCount;
+int vertexCount=Models::CubeInternal::vertexCount;*/
+vector<glm::vec4> vertices;
+vector<glm::vec2> uvs;
+vector<float> colors;
+vector<glm::vec4> normals;
+int vertexCount;
+
 
 //Czajnik
 /*float* vertices=Models::TeapotInternal::vertices;
@@ -117,9 +126,9 @@ void assignVBOtoAttribute(ShaderProgram *shaderProgram,const char* attributeName
 void prepareObject(ShaderProgram *shaderProgram) {
 	//Zbuduj VBO z danymi obiektu do narysowania
 
-	bufVertices=makeBuffer(vertices, vertexCount, sizeof(float)*4); //VBO ze współrzędnymi wierzchołków
-	bufColors=makeBuffer(colors, vertexCount, sizeof(float)*4);//VBO z kolorami wierzchołków
-	bufNormals=makeBuffer(normals, vertexCount, sizeof(float)*4);//VBO z wektorami normalnymi wierzchołków
+	bufVertices=makeBuffer(&vertices[0],vertexCount,sizeof(vertices[0])); //VBO ze współrzędnymi wierzchołków
+	bufColors=makeBuffer(&colors[0], vertexCount, sizeof(colors[0]));//VBO z kolorami wierzchołków
+	bufNormals=makeBuffer(&normals[0], vertexCount, sizeof(normals[0]));//VBO z wektorami normalnymi wierzchołków
 
 	//Zbuduj VAO wiążący atrybuty z konkretnymi VBO
 	glGenVertexArrays(1,&vao); //Wygeneruj uchwyt na VAO i zapisz go do zmiennej globalnej
@@ -217,6 +226,13 @@ void drawScene(GLFWwindow* window, float angle_x, float angle_y) {
 
 int main(void)
 {
+    loadOBJ("bottle.obj",vertices,uvs,normals);
+    for(int i=0;i<vertices.size();i++){
+        colors.push_back(1.0f);
+        cout<<vertices[i].x<<endl;
+    }
+    vertexCount = vertices.size();
+
 	GLFWwindow* window; //Wskaźnik na obiekt reprezentujący okno
 
 	glfwSetErrorCallback(error_callback);//Zarejestruj procedurę obsługi błędów

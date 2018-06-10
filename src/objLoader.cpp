@@ -9,9 +9,9 @@
 
 bool loadOBJ(
 	const char * path,
-	std::vector<glm::vec3> & out_vertices,
+	std::vector<glm::vec4> & out_vertices,
 	std::vector<glm::vec2> & out_uvs,
-	std::vector<glm::vec3> & out_normals
+	std::vector<glm::vec4> & out_normals
 ){
 	printf("Loading OBJ file %s...\n", path);
 
@@ -77,13 +77,13 @@ bool loadOBJ(
 		for ( unsigned int i=0; i<3; i+=1 ){
 
 			unsigned int vertexIndex = vertexIndices[v+i];
-			glm::vec3 vertex = temp_vertices[ vertexIndex-1 ];
+			glm::vec4 vertex = temp_vertices[ vertexIndex-1 ];
 
 			unsigned int uvIndex = uvIndices[v+i];
 			glm::vec2 uv = temp_uvs[ uvIndex-1 ];
 
 			unsigned int normalIndex = normalIndices[v+i];
-			glm::vec3 normal = temp_normals[ normalIndex-1 ];
+			glm::vec4 normal = temp_normals[ normalIndex-1 ];
 
 			out_vertices.push_back(vertex);
 			out_uvs     .push_back(uv);
