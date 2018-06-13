@@ -33,22 +33,28 @@ Place, Fifth Floor, Boston, MA  02110 - 1301  USA
 #include "model.h"
 
 namespace Models {
-
-
+		
+	
 	namespace TeapotInternal {
 		extern float vertices[];
 		extern float normals[];
 		extern float vertexNormals[];
 		extern float texCoords[];
 		extern float colors[];
+		extern float c1[];
+		extern float c2[];
+		extern float c3[];
+		extern float c1_2[];
+		extern float c2_2[];
+		extern float c3_2[];
 		extern unsigned int vertexCount;
-	}
-
+	} 
+ 
 	class Teapot: public Model {
 		public:
-			Teapot();
+			Teapot();			
 			virtual ~Teapot();
-			virtual void drawSolid();
+			virtual void drawSolid();			
 	};
 
 	extern Teapot teapot;
