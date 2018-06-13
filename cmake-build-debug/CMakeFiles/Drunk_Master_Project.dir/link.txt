@@ -1,1 +1,0 @@
-/usr/bin/c++  -g   CMakeFiles/Drunk_Master_Project.dir/main.cpp.o  -o Drunk_Master_Project 
