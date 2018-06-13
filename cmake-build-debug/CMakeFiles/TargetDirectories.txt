@@ -1,3 +1,0 @@
-/home/pluto/Pulpit/Drunk-Master-Project/cmake-build-debug/CMakeFiles/rebuild_cache.dir
-/home/pluto/Pulpit/Drunk-Master-Project/cmake-build-debug/CMakeFiles/edit_cache.dir
-/home/pluto/Pulpit/Drunk-Master-Project/cmake-build-debug/CMakeFiles/Drunk_Master_Project.dir
