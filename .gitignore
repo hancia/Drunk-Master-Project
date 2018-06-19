@@ -33,3 +33,7 @@ obj/
 bin/
 .depend
 .layout
+
+.idea
+cmake-build-debug*
+
