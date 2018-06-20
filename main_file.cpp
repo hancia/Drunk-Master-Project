@@ -386,12 +386,7 @@ void drawScene(GLFWwindow* window, float angle_x, float angle_y, float eye_angle
 	glClear(GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT); //Wykonaj czyszczenie bufora kolorów i głębokości
 
 	glm::mat4 P = glm::perspective(50 * PI / 180, aspect, 1.0f, 50.0f); //Wylicz macierz rzutowania
-	glm::mat4 V = glm::lookAt( //Wylicz macierz widoku
-		glm::vec3(angle_y, 0.0f, angle_x),
-		glm::vec3(angle_y+1.0f, 0.0f, angle_x+1.0f+eye_angle_x),
-		glm::vec3(0.0f, 1.0f, 0.0f));
-
-    glm::mat4 view = glm::lookAt(cameraPos, cameraPos + cameraFront, cameraUp);
+    glm::mat4 V = glm::lookAt(cameraPos, cameraPos + cameraFront, cameraUp);
 	glm::mat4 M = glm::mat4(1.0f);
 
 	//M = glm::rotate(M, angle_x, glm::vec3(1, 0, 0));
@@ -399,10 +394,10 @@ void drawScene(GLFWwindow* window, float angle_x, float angle_y, float eye_angle
 
     M = glm::translate(M,vec3(0.0f,0.0f,8.0f));
 	//Narysuj obiekt
-	drawObject(shaderProgram,P,view,M);
+	drawObject(shaderProgram,P,V,M);
 
     M = glm::translate(M,vec3(8.0f,0.0f,0.0f));
-	drawObject2(shaderProgram2,P,view,M);
+	drawObject2(shaderProgram2,P,V,M);
 
 	//Przerzuć tylny bufor na przedni
 	glfwSwapBuffers(window);
