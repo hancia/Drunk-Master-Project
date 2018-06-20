@@ -34,6 +34,25 @@ Place, Fifth Floor, Boston, MA  02110 - 1301  USA
 
 using namespace std;
 using namespace glm;
+// settings
+const unsigned int SCR_WIDTH = 500;
+const unsigned int SCR_HEIGHT = 500;
+
+// camera
+glm::vec3 cameraPos   = glm::vec3(0.0f, 0.0f, 3.0f);
+glm::vec3 cameraFront = glm::vec3(0.0f, 0.0f, -1.0f);
+glm::vec3 cameraUp    = glm::vec3(0.0f, 1.0f, 0.0f);
+
+bool firstMouse = true;
+float yaw1   = -90.0f;	// yaw is initialized to -90.0 degrees since a yaw of 0.0 results in a direction vector pointing to the right so we initially rotate a bit to the left.
+float pitch1 =  0.0f;
+float lastX =  500.0f / 2.0;
+float lastY =  500.0 / 2.0;
+float fov   =  45.0f;
+
+// timing
+float deltaTime = 0.0f;	// time between current frame and last frame
+float lastFrame = 0.0f;
 
 const float PI = 3.141592653589793f;
 
@@ -42,6 +61,8 @@ GLuint normalTex2; //Zmienna reprezentujaca teksturę
 
 float speed_x = 0; // [radiany/s]
 float speed_y = 0; // [radiany/s]
+float eye_x = 0; // [radiany/s]
+float eye_y = 0; // [radiany/s]
 
 float aspect=1; //Stosunek szerokości do wysokości okna
 
@@ -93,25 +114,6 @@ void error_callback(int error, const char* description) {
 	fputs(description, stderr);
 }
 
-//Procedura obsługi klawiatury
-void key_callback(GLFWwindow* window, int key,
-	int scancode, int action, int mods) {
-	if (action == GLFW_PRESS) {
-		if (key == GLFW_KEY_LEFT) speed_y = 3.14;
-		if (key == GLFW_KEY_RIGHT) speed_y = -3.14;
-		if (key == GLFW_KEY_UP) speed_x = 3.14;
-		if (key == GLFW_KEY_DOWN) speed_x = -3.14;
-	}
-
-
-	if (action == GLFW_RELEASE) {
-		if (key == GLFW_KEY_LEFT) speed_y = 0;
-		if (key == GLFW_KEY_RIGHT) speed_y = 0;
-		if (key == GLFW_KEY_UP) speed_x = 0;
-		if (key == GLFW_KEY_DOWN) speed_x = 0;
-	}
-}
-
 //Procedura obługi zmiany rozmiaru bufora ramki
 void windowResize(GLFWwindow* window, int width, int height) {
     glViewport(0, 0, width, height); //Obraz ma być generowany w oknie o tej rozdzielczości
@@ -133,27 +135,6 @@ GLuint readTexture0(char* filename, GLuint texture) {
   unsigned error = lodepng::decode(image, width, height, filename);
 
   //Import do pamięci karty graficznejgl
-  glBindTexture(GL_TEXTURE_2D, texture);
-  //Wczytaj obrazek do pamięci KG skojarzonej z uchwytem
-  glTexImage2D(GL_TEXTURE_2D, 0, 4, width, height, 0,
-    GL_RGBA, GL_UNSIGNED_BYTE, (unsigned char*) image.data());
-
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER,GL_LINEAR);
-
-  return texture;
-}
-GLuint readTexture1(char* filename, GLuint texture) {
-  GLuint tex;
-  glActiveTexture(GL_TEXTURE0);
-
-  //Wczytanie do pamięci komputera
-  std::vector<unsigned char> image;   //Alokuj wektor do wczytania obrazka
-  unsigned width, height;   //Zmienne do których wczytamy wymiary obrazka
-  //Wczytaj obrazek
-  unsigned error = lodepng::decode(image, width, height, filename);
-
-  //Import do pamięci karty graficznej
   glBindTexture(GL_TEXTURE_2D, texture);
   //Wczytaj obrazek do pamięci KG skojarzonej z uchwytem
   glTexImage2D(GL_TEXTURE_2D, 0, 4, width, height, 0,
@@ -229,7 +210,7 @@ void initOpenGLProgram(GLFWwindow* window) {
 	//************Tutaj umieszczaj kod, który należy wykonać raz, na początku programu************
 	glClearColor(0, 0, 0, 1); //Czyść ekran na czarno
 	glEnable(GL_DEPTH_TEST); //Włącz używanie Z-Bufora
-	glfwSetKeyCallback(window, key_callback); //Zarejestruj procedurę obsługi klawiatury
+	//glfwSetKeyCallback(window, key_callback); //Zarejestruj procedurę obsługi klawiatury
 	glfwSetFramebufferSizeCallback(window,windowResize); //Zarejestruj procedurę obsługi zmiany rozmiaru bufora ramki
 
 	shaderProgram=new ShaderProgram("vshader.glsl",NULL,"fshader.glsl"); //Wczytaj program cieniujący
@@ -336,36 +317,97 @@ void drawObject2(ShaderProgram *shaderProgram, mat4 mP, mat4 mV, mat4 mM) {
 	//Dezaktywuj VAO
 	glBindVertexArray(0);
 }
+void mouse_callback(GLFWwindow* window, double xpos, double ypos)
+{
+    if (firstMouse)
+    {
+        lastX = xpos;
+        lastY = ypos;
+        firstMouse = false;
+    }
+
+    float xoffset = xpos - lastX;
+    float yoffset = lastY - ypos; // reversed since y-coordinates go from bottom to top
+    lastX = xpos;
+    lastY = ypos;
+
+    float sensitivity = 0.1f; // change this value to your liking
+    xoffset *= sensitivity;
+    yoffset *= sensitivity;
+
+    yaw1 += xoffset;
+    pitch1 += yoffset;
+
+    // make sure that when pitch is out of bounds, screen doesn't get flipped
+    if (pitch1 > 89.0f)
+        pitch1 = 89.0f;
+    if (pitch1 < -89.0f)
+        pitch1 = -89.0f;
+
+    glm::vec3 front;
+    front.x = cos(glm::radians(yaw1)) * cos(glm::radians(pitch1));
+    front.y = sin(glm::radians(pitch1));
+    front.z = sin(glm::radians(yaw1)) * cos(glm::radians(pitch1));
+    cameraFront = glm::normalize(front);
+}
+
+// glfw: whenever the mouse scroll wheel scrolls, this callback is called
+// ----------------------------------------------------------------------
+void scroll_callback(GLFWwindow* window, double xoffset, double yoffset)
+{
+    if (fov >= 1.0f && fov <= 45.0f)
+        fov -= yoffset;
+    if (fov <= 1.0f)
+        fov = 1.0f;
+    if (fov >= 45.0f)
+        fov = 45.0f;
+}
+
+void processInput(GLFWwindow *window)
+{
+    if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
+        glfwSetWindowShouldClose(window, true);
+
+    float cameraSpeed = 15 * deltaTime;
+    if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
+        cameraPos += cameraSpeed * cameraFront;
+    if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
+        cameraPos -= cameraSpeed * cameraFront;
+    if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
+        cameraPos -= glm::normalize(glm::cross(cameraFront, cameraUp)) * cameraSpeed;
+    if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
+        cameraPos += glm::normalize(glm::cross(cameraFront, cameraUp)) * cameraSpeed;
+}
+
 //Procedura rysująca zawartość sceny
-void drawScene(GLFWwindow* window, float angle_x, float angle_y) {
+void drawScene(GLFWwindow* window, float angle_x, float angle_y, float eye_angle_x, float eye_angle_y) {
 	//************Tutaj umieszczaj kod rysujący obraz******************l
 
 	glClear(GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT); //Wykonaj czyszczenie bufora kolorów i głębokości
 
 	glm::mat4 P = glm::perspective(50 * PI / 180, aspect, 1.0f, 50.0f); //Wylicz macierz rzutowania
-    cout<<angle_x<<" "<<angle_y<<endl;
 	glm::mat4 V = glm::lookAt( //Wylicz macierz widoku
 		glm::vec3(angle_y, 0.0f, angle_x),
-		glm::vec3(angle_y+1.0f, 0.0f, angle_x+1.0f),
+		glm::vec3(angle_y+1.0f, 0.0f, angle_x+1.0f+eye_angle_x),
 		glm::vec3(0.0f, 1.0f, 0.0f));
 
-
-	//Wylicz macierz modelu rysowanego obiektu
+    glm::mat4 view = glm::lookAt(cameraPos, cameraPos + cameraFront, cameraUp);
 	glm::mat4 M = glm::mat4(1.0f);
+
 	//M = glm::rotate(M, angle_x, glm::vec3(1, 0, 0));
 	//M = glm::rotate(M, angle_y, glm::vec3(0, 1, 0));
 
-    M = glm::translate(M,vec3(-5.0f,0.0f,8.0f));
+    M = glm::translate(M,vec3(0.0f,0.0f,8.0f));
 	//Narysuj obiekt
-	drawObject(shaderProgram,P,V,M);
+	drawObject(shaderProgram,P,view,M);
+
     M = glm::translate(M,vec3(8.0f,0.0f,0.0f));
-	drawObject2(shaderProgram2,P,V,M);
+	drawObject2(shaderProgram2,P,view,M);
+
 	//Przerzuć tylny bufor na przedni
 	glfwSwapBuffers(window);
 
 }
-
-
 
 int main(void)
 {
@@ -391,6 +433,11 @@ int main(void)
 		exit(EXIT_FAILURE);
 	}
 
+    glfwSetCursorPosCallback(window, mouse_callback);
+    glfwSetScrollCallback(window, scroll_callback);
+
+    glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+
 	glfwMakeContextCurrent(window); //Od tego momentu kontekst okna staje się aktywny i polecenia OpenGL będą dotyczyć właśnie jego.
 	glfwSwapInterval(1); //Czekaj na 1 powrót plamki przed pokazaniem ukrytego bufora
 
@@ -403,16 +450,19 @@ int main(void)
 
 	float angle_x = 0; //Kąt obrotu obiektu
 	float angle_y = 0; //Kąt obrotu obiektu
+    float eye_angle_x = 0; //Kąt obrotu obiektu
+	float eye_angle_y = 0; //Kąt obrotu obiektu
 
 	glfwSetTime(0); //Wyzeruj licznik czasu
 
 	//Główna pętla
 	while (!glfwWindowShouldClose(window)) //Tak długo jak okno nie powinno zostać zamknięte
 	{
-		angle_x += 5*speed_x*glfwGetTime(); //Zwiększ kąt o prędkość kątową razy czas jaki upłynął od poprzedniej klatki
-		angle_y += 5*speed_y*glfwGetTime(); //Zwiększ kąt o prędkość kątową razy czas jaki upłynął od poprzedniej klatki
+
+        processInput(window);
+        deltaTime = glfwGetTime();
 		glfwSetTime(0); //Wyzeruj licznik czasu
-		drawScene(window,angle_x,angle_y); //Wykonaj procedurę rysującą
+		drawScene(window,angle_x,angle_y,eye_angle_x,eye_angle_y); //Wykonaj procedurę rysującą
 		glfwPollEvents(); //Wykonaj procedury callback w zalezności od zdarzeń jakie zaszły.
 	}
 
