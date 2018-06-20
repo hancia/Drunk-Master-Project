@@ -29,11 +29,11 @@
 *.out
 *.app
 
-obj/
-bin/
-.depend
-.layout
+obj/*
+bin/*
+*.depend
+*.layout
 
-.idea
+*.idea
 cmake-build-debug*
 
