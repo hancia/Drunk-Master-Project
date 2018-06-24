@@ -22,12 +22,18 @@
 # Compiled Static libraries
 *.lai
 *.la
-*.a
 
 
 # Executables
 *.exe
 *.out
 *.app
-.idea
+
+obj/*
+bin/*
+*.depend
+*.layout
+
+*.idea
 cmake-build-debug*
+
