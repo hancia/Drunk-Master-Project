@@ -261,6 +261,7 @@ void drawObject(ShaderProgram *shaderProgram, mat4 mP, mat4 mV, mat4 mM) {
 	glUniformMatrix4fv(shaderProgram->getUniformLocation("P"),1, false, glm::value_ptr(mP));
 	glUniformMatrix4fv(shaderProgram->getUniformLocation("V"),1, false, glm::value_ptr(mV));
 	glUniformMatrix4fv(shaderProgram->getUniformLocation("M"),1, false, glm::value_ptr(mM));
+	glUniform4fv(shaderProgram->getUniformLocation("lp"),1,glm::value_ptr(vec4(cameraPos.x,cameraPos.y,cameraPos.z,-1)));
 
 	//Powiąż zmienne typu sampler2D z jednostkami teksturującymi
 	//glUniform1i(shaderProgram->getUniformLocation("normalMap"),1);
@@ -298,7 +299,7 @@ void drawObject2(ShaderProgram *shaderProgram, mat4 mP, mat4 mV, mat4 mM) {
 	glUniformMatrix4fv(shaderProgram->getUniformLocation("P"),1, false, glm::value_ptr(mP));
 	glUniformMatrix4fv(shaderProgram->getUniformLocation("V"),1, false, glm::value_ptr(mV));
 	glUniformMatrix4fv(shaderProgram->getUniformLocation("M"),1, false, glm::value_ptr(mM));
-
+	glUniform4fv(shaderProgram->getUniformLocation("lp"),1,glm::value_ptr(vec4(cameraPos.x,cameraPos.y,5,-1)));
 	//Powiąż zmienne typu sampler2D z jednostkami teksturującymi
 	//glUniform1i(shaderProgram->getUniformLocation("normalMap"),1);
 
@@ -370,9 +371,9 @@ void processInput(GLFWwindow *window)
 
     float cameraSpeed = 15 * deltaTime;
     if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
-        cameraPos += cameraSpeed * vec3(1.0f,0.0f,1.0f);
+        cameraPos += cameraSpeed * vec3(1.0f,0.0f,1.0f)*cameraFront;
     if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
-        cameraPos -= cameraSpeed * vec3(1.0f,0.0f,1.0f);
+        cameraPos -= cameraSpeed * vec3(1.0f,0.0f,1.0f)*cameraFront;
     if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
         cameraPos -= glm::normalize(glm::cross(cameraFront, cameraUp)) * cameraSpeed;
     if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
