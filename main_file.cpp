@@ -39,7 +39,7 @@ const unsigned int SCR_WIDTH = 500;
 const unsigned int SCR_HEIGHT = 500;
 
 // camera
-glm::vec3 cameraPos   = glm::vec3(0.0f, 0.0f, 3.0f);
+glm::vec3 cameraPos   = glm::vec3(0.0f, 15.0f, -3.0f);
 glm::vec3 cameraFront = glm::vec3(0.0f, 0.0f, -1.0f);
 glm::vec3 cameraUp    = glm::vec3(0.0f, 1.0f, 0.0f);
 
@@ -370,9 +370,9 @@ void processInput(GLFWwindow *window)
 
     float cameraSpeed = 15 * deltaTime;
     if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
-        cameraPos += cameraSpeed * cameraFront;
+        cameraPos += cameraSpeed * vec3(1.0f,0.0f,1.0f);
     if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
-        cameraPos -= cameraSpeed * cameraFront;
+        cameraPos -= cameraSpeed * vec3(1.0f,0.0f,1.0f);
     if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
         cameraPos -= glm::normalize(glm::cross(cameraFront, cameraUp)) * cameraSpeed;
     if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
@@ -386,7 +386,9 @@ void drawScene(GLFWwindow* window, float angle_x, float angle_y, float eye_angle
 	glClear(GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT); //Wykonaj czyszczenie bufora kolorów i głębokości
 
 	glm::mat4 P = glm::perspective(50 * PI / 180, aspect, 1.0f, 50.0f); //Wylicz macierz rzutowania
-    glm::mat4 V = glm::lookAt(cameraPos, cameraPos + cameraFront, cameraUp);
+	//cout<<cameraPos.x<<" "<<cameraPos.y<<" "<<cameraPos.y<<" "<<cameraFront.x<<" "<<cameraFront.y<<" "<<cameraFront.z<<" "<<cameraUp.x<<" "<<cameraUp.y<<" "<<cameraUp.z<<" "<<endl;
+
+    glm::mat4 V = glm::lookAt(cameraPos,cameraPos+cameraFront, cameraUp);
 	glm::mat4 M = glm::mat4(1.0f);
 
 	//M = glm::rotate(M, angle_x, glm::vec3(1, 0, 0));
