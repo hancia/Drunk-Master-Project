@@ -1,27 +1,3 @@
-/*
-LodePNG version 20160124
-
-Copyright (c) 2005-2016 Lode Vandevenne
-
-This software is provided 'as-is', without any express or implied
-warranty. In no event will the authors be held liable for any damages
-arising from the use of this software.
-
-Permission is granted to anyone to use this software for any purpose,
-including commercial applications, and to alter it and redistribute it
-freely, subject to the following restrictions:
-
-    1. The origin of this software must not be misrepresented; you must not
-    claim that you wrote the original software. If you use this software
-    in a product, an acknowledgment in the product documentation would be
-    appreciated but is not required.
-
-    2. Altered source versions must be plainly marked as such, and must not be
-    misrepresented as being the original software.
-
-    3. This notice may not be removed or altered from any source
-    distribution.
-*/
 
 #ifndef LODEPNG_H
 #define LODEPNG_H
@@ -30,17 +6,7 @@ freely, subject to the following restrictions:
 
 extern const char* LODEPNG_VERSION_STRING;
 
-/*
-The following #defines are used to create code sections. They can be disabled
-to disable code sections, which can give faster compile time and smaller binary.
-The "NO_COMPILE" defines are designed to be used to pass as defines to the
-compiler command to disable them without modifying this header, e.g.
--DLODEPNG_NO_COMPILE_ZLIB for gcc.
-In addition to those below, you can also define LODEPNG_NO_COMPILE_CRC to
-allow implementing a custom lodepng_crc32.
-*/
-/*deflate & zlib. If disabled, you must specify alternative zlib functions in
-the custom_zlib field of the compress and decompress settings*/
+
 #ifndef LODEPNG_NO_COMPILE_ZLIB
 #define LODEPNG_COMPILE_ZLIB
 #endif
