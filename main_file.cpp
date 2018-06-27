@@ -1,22 +1,5 @@
-/*
-Niniejszy program jest wolnym oprogramowaniem; możesz go
-rozprowadzać dalej i / lub modyfikować na warunkach Powszechnej
-Licencji Publicznej GNU, wydanej przez Fundację Wolnego
-Oprogramowania - według wersji 2 tej Licencji lub(według twojego
-wyboru) którejś z późniejszych wersji.
-
-Niniejszy program rozpowszechniany jest z nadzieją, iż będzie on
-użyteczny - jednak BEZ JAKIEJKOLWIEK GWARANCJI, nawet domyślnej
-gwarancji PRZYDATNOŚCI HANDLOWEJ albo PRZYDATNOŚCI DO OKREŚLONYCH
-ZASTOSOWAŃ.W celu uzyskania bliższych informacji sięgnij do
-Powszechnej Licencji Publicznej GNU.
-
-Z pewnością wraz z niniejszym programem otrzymałeś też egzemplarz
-Powszechnej Licencji Publicznej GNU(GNU General Public License);
-jeśli nie - napisz do Free Software Foundation, Inc., 59 Temple
-Place, Fifth Floor, Boston, MA  02110 - 1301  USA
-*/
-
+#include <cstdlib>
+#include <ctime>
 #define GLM_FORCE_RADIANS
 #define GLM_FORCE_SWIZZLE
 #include <vector>
@@ -38,10 +21,15 @@ using namespace glm;
 const unsigned int SCR_WIDTH = 500;
 const unsigned int SCR_HEIGHT = 500;
 
+const float PI = 3.141592653589793f;
+
 // camera
 glm::vec3 cameraPos   = glm::vec3(0.0f, 15.0f, -3.0f);
 glm::vec3 cameraFront = glm::vec3(0.0f, 0.0f, -1.0f);
 glm::vec3 cameraUp    = glm::vec3(0.0f, 1.0f, 0.0f);
+
+float bottle_y = 1.0f,new_y=15.0f,frames=600,current_y=bottle_y;
+float goal_angle = PI/1.5f, start_angle = 0, current_angle = start_angle;
 
 bool firstMouse = true;
 float yaw1   = -90.0f;	// yaw is initialized to -90.0 degrees since a yaw of 0.0 results in a direction vector pointing to the right so we initially rotate a bit to the left.
@@ -53,8 +41,6 @@ float fov   =  45.0f;
 // timing
 float deltaTime = 0.0f;	// time between current frame and last frame
 float lastFrame = 0.0f;
-
-const float PI = 3.141592653589793f;
 
 GLuint normalTex; //Zmienna reprezentujaca teksturę
 GLuint normalTex2; //Zmienna reprezentujaca teksturę
@@ -108,7 +94,11 @@ float *normals2 = static_cast<float*>(glm::value_ptr(v_normals2.front()));
 float *texCoords2 = static_cast<float*>(glm::value_ptr(v_uvs2.front()));
 GLuint *textures;
 
-
+double fRand(double fMin, double fMax)
+{
+    double f = (double)rand() / RAND_MAX;
+    return fMin + f * (fMax - fMin);
+}
 //Procedura obsługi błędów
 void error_callback(int error, const char* description) {
 	fputs(description, stderr);
@@ -318,6 +308,7 @@ void drawObject2(ShaderProgram *shaderProgram, mat4 mP, mat4 mV, mat4 mM) {
 	//Dezaktywuj VAO
 	glBindVertexArray(0);
 }
+
 void mouse_callback(GLFWwindow* window, double xpos, double ypos)
 {
     if (firstMouse)
@@ -332,7 +323,7 @@ void mouse_callback(GLFWwindow* window, double xpos, double ypos)
     lastX = xpos;
     lastY = ypos;
 
-    float sensitivity = 0.1f; // change this value to your liking
+    float sensitivity = 0.1*fRand(-1,3);// change this value to your liking
     xoffset *= sensitivity;
     yoffset *= sensitivity;
 
@@ -381,7 +372,7 @@ void processInput(GLFWwindow *window)
 }
 
 //Procedura rysująca zawartość sceny
-void drawScene(GLFWwindow* window, float angle_x, float angle_y, float eye_angle_x, float eye_angle_y) {
+void drawScene(GLFWwindow* window) {
 	//************Tutaj umieszczaj kod rysujący obraz******************l
 
 	glClear(GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT); //Wykonaj czyszczenie bufora kolorów i głębokości
@@ -395,13 +386,16 @@ void drawScene(GLFWwindow* window, float angle_x, float angle_y, float eye_angle
 	//M = glm::rotate(M, angle_x, glm::vec3(1, 0, 0));
 	//M = glm::rotate(M, angle_y, glm::vec3(0, 1, 0));
 
-    M = glm::translate(M,vec3(0.0f,0.0f,8.0f));
+    M = glm::translate(M,vec3(0.0f,0.0f,0.0f));
 	//Narysuj obiekt
 	drawObject(shaderProgram,P,V,M);
 
-    M = glm::translate(M,vec3(8.0f,0.0f,0.0f));
+    M = glm::translate(M,vec3(0.0f,current_y,0.0f));
+    M = glm::rotate(M, current_angle, glm::vec3(-1, 0, 0));
 	drawObject2(shaderProgram2,P,V,M);
-
+    if(current_y<new_y)current_y+=(new_y-bottle_y)/frames;
+    if(current_angle<goal_angle)current_angle+=(goal_angle-start_angle)/frames;
+    //cout<<current_y<<endl;
 	//Przerzuć tylny bufor na przedni
 	glfwSwapBuffers(window);
 
@@ -409,7 +403,7 @@ void drawScene(GLFWwindow* window, float angle_x, float angle_y, float eye_angle
 
 int main(void)
 {
-
+    srand( time( NULL ) );
     vertexCount = v_vertices.size();
     vertexCount2 = v_vertices2.size();
 
@@ -422,7 +416,7 @@ int main(void)
 		exit(EXIT_FAILURE);
 	}
 
-	window = glfwCreateWindow(500, 500, "OpenGL", NULL, NULL);  //Utwórz okno 500x500 o tytule "OpenGL" i kontekst OpenGL.
+	window = glfwCreateWindow(1024, 768, "OpenGL", NULL, NULL);  //Utwórz okno 500x500 o tytule "OpenGL" i kontekst OpenGL.
 
 	if (!window) //Jeżeli okna nie udało się utworzyć, to zamknij program
 	{
@@ -456,11 +450,10 @@ int main(void)
 	//Główna pętla
 	while (!glfwWindowShouldClose(window)) //Tak długo jak okno nie powinno zostać zamknięte
 	{
-
         processInput(window);
         deltaTime = glfwGetTime();
 		glfwSetTime(0); //Wyzeruj licznik czasu
-		drawScene(window,angle_x,angle_y,eye_angle_x,eye_angle_y); //Wykonaj procedurę rysującą
+		drawScene(window); //Wykonaj procedurę rysującą
 		glfwPollEvents(); //Wykonaj procedury callback w zalezności od zdarzeń jakie zaszły.
 	}
 
