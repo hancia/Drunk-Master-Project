@@ -11,7 +11,10 @@ bool loadOBJ(
 	const char * path,
 	std::vector<glm::vec4> & out_vertices,
 	std::vector<glm::vec2> & out_uvs,
-	std::vector<glm::vec4> & out_normals
+	std::vector<glm::vec4> & out_normals,
+	float scalex,
+	float scaley,
+	float scalez
 ){
 	printf("Loading OBJ file %s...\n", path);
 
@@ -37,9 +40,9 @@ bool loadOBJ(
 		if ( strcmp( lineHeader, "v" ) == 0 ){
 			glm::vec4 vertex;
 			fscanf(file, "%f %f %f\n", &vertex.x, &vertex.y, &vertex.z );
-			vertex.x/=3;
-			vertex.y/=3;
-			vertex.z/=3;
+			vertex.x*=scalex;
+			vertex.y*=scaley;
+			vertex.z*=scalez;
 			vertex.w = 1.0f;
 			temp_vertices.push_back(vertex);
 		}else if ( strcmp( lineHeader, "vt" ) == 0 ){

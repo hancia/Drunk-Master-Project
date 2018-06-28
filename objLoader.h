@@ -5,7 +5,10 @@ bool loadOBJ(
 	const char * path,
 	std::vector<glm::vec4> & out_vertices,
 	std::vector<glm::vec2> & out_uvs,
-	std::vector<glm::vec4> & out_normals
+	std::vector<glm::vec4> & out_normals,
+	float scalex,
+	float scaley,
+	float scalez
 );
 
 #endif
