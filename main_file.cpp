@@ -139,19 +139,12 @@ void drawScene(GLFWwindow* window) {
 
 	glm::mat4 P = glm::perspective(50 * PI / 180, aspect, 1.0f, 50.0f);
 	//cout<<cameraPos.x<<" "<<cameraPos.y<<" "<<cameraPos.y<<" "<<cameraFront.x<<" "<<cameraFront.y<<" "<<cameraFront.z<<" "<<cameraUp.x<<" "<<cameraUp.y<<" "<<cameraUp.z<<" "<<endl;
-
     glm::mat4 V = glm::lookAt(cameraPos,cameraPos+cameraFront, cameraUp);
-	glm::mat4 M = glm::mat4(1.0f);
 
 
-    M = glm::translate(M,vec3(0.0f,0.0f,0.0f));
+	butelka1.drawObject(butelka1.shaderProgram,P,V,0);
 
-
-	butelka1.drawObject(butelka1.shaderProgram,P,V,M,0);
-
-    M = glm::translate(M,vec3(0.0f,current_y,0.0f));
-    M = glm::rotate(M, current_angle, glm::vec3(-1, 0, 0));
-	butelka2.drawObject(butelka2.shaderProgram,P,V,M,1);
+	butelka2.drawObject(butelka2.shaderProgram,P,V,1);
     if(current_y<new_y)current_y+=(new_y-bottle_y)/frames;
     if(current_angle<goal_angle)current_angle+=(goal_angle-start_angle)/frames;
 
