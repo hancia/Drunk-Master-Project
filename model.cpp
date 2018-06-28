@@ -11,6 +11,7 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <stdlib.h>
 #include <stdio.h>
+#include <string>
 #include "lodepng.h"
 #include "shaderprogram.h"
 #include "objLoader.h"
@@ -28,14 +29,14 @@ public:
     float *vertices, *normals, *texCoords;
     int vertexCount;
     bool wynik, is_pickable=0;
-    char* texturename;
+    string texturename;
     glm::mat4 M;
     float x_start = 0.0f, y_start = 0.0f, z_start = 0.0f;
     float x_current = 0.0f, y_current =0.0f, z_current =0.0f;
     float angle_start = 0.0f, angle_current = 0.0f;
 
     Object(){};
-    void Create(const char *pathname, char* filename,float x = 0.0f, float y = 0.0f, float z = 0.0f, float scalex=1,float scaley=1,float scalez=1, bool pickable = false){
+    void Create(const char *pathname, string filename,float x = 0.0f, float y = 0.0f, float z = 0.0f, float scalex=1,float scaley=1,float scalez=1, bool pickable = false){
         M = glm::mat4(1.0f);
         x_start = x;
         y_start = y;
@@ -106,7 +107,7 @@ public:
         M = glm::rotate(M, angle, vec3v);
     }
 
-    GLuint readTexture(char* filename, GLuint texture) {
+    GLuint readTexture(string filename, GLuint texture) {
         glActiveTexture(GL_TEXTURE0);
         std::vector<unsigned char> image;
         unsigned width, height;

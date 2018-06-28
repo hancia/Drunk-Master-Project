@@ -11,6 +11,8 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <stdlib.h>
 #include <stdio.h>
+#include <string>
+#include <vector>
 #include "lodepng.h"
 #include "shaderprogram.h"
 #include "objLoader.h"
@@ -157,7 +159,7 @@ int getBottleId(){
     float error=999999,min_error=999999;
     int id=-1;
     for(int i=0;i<n;i++){
-        error=abs(objectsArray[i].x_start-cameraPos.x+1)+abs(objectsArray[i].z_start-cameraPos.z+1);
+        error=abs(objectsArray[i].x_start-cameraPos.x)+abs(objectsArray[i].z_start-cameraPos.z);
         if(error<min_error && objectsArray[i].is_pickable){
             min_error=error;
             id=i;
@@ -202,29 +204,36 @@ void processInput(GLFWwindow *window){
 
 int main(void){
     srand( time( NULL ) );
+    vector <string> tex;
+    string temp="glassX.png";
+    for(int i=0;i<=9;i++){
+        temp[5] = i + '0';
+        tex.push_back(temp);
+    }
+    cout<<tex[0]<<endl;
     for(int i=0;i+6<11;i++){
-        objectsArray[i+6].Create("bottle.obj", "glass.png",0+i*3,10,18,0.35,0.35,0.35,true);
+        objectsArray[i+6].Create("bottle.obj", tex[rand()%tex.size()],0+i*3,10,18,0.35,0.35,0.35,true);
     }
     for(int i=0;i+11<n;i++){
-        objectsArray[i+11].Create("kieliszek.obj", "glass.png",-15+3*i,7,18,0.3,0.3,0.3, true);
+        objectsArray[i+11].Create("kieliszek.obj", tex[rand()%tex.size()],-15+3*i,7,18,0.3,0.3,0.3, true);
     }
 
-    objectsArray[0].Create("bar.obj","wall.png",0,0,18,2,6,4);
+    objectsArray[0].Create("bar.obj","czarny.png",0,0,18,2,6,4);
     objectsArray[0].rotateM(PI/2,vec3(0,1,0));
 
-    objectsArray[1].Create("wall.obj","mosaic.png",0,0,0,10,10,10);//podloga
+    objectsArray[1].Create("wall.obj","ctroj.png",0,0,0,10,10,10);//podloga
 
-    objectsArray[3].Create("wall.obj","kwadraty.png",0,5,-20,10,5,5);//sciana
+    objectsArray[3].Create("wall.obj","pink.png",0,5,-20,10,5,5);//sciana
     objectsArray[3].rotateM(PI/2,vec3(1,0,0));
 
-    objectsArray[2].Create("wall.obj","kwadraty.png",0,5,20,10,5,5);//sciana
+    objectsArray[2].Create("wall.obj","pink.png",0,5,20,10,5,5);//sciana
     objectsArray[2].rotateM(PI/2,vec3(-1,0,0));
 
-    objectsArray[4].Create("wall.obj","bricks.png",20,5,0,10,5,5);//sciana
+    objectsArray[4].Create("wall.obj","glass7.png",20,5,0,10,5,5);//sciana
     objectsArray[4].rotateM(PI/2,vec3(-1,0,0));
     objectsArray[4].rotateM(PI/2,vec3(0,0,1));
 
-    objectsArray[5].Create("wall.obj","bricks.png",-20,5,0,10,5,5);//sciana
+    objectsArray[5].Create("wall.obj","glass7.png",-20,5,0,10,5,5);//sciana
     objectsArray[5].rotateM(PI/2,vec3(-1,0,0));
     objectsArray[5].rotateM(PI/2,vec3(0,0,-1));
 
