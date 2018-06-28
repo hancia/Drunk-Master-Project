@@ -32,7 +32,7 @@ public:
     glm::mat4 M;
     float x_start = 0.0f, y_start = 0.0f, z_start = 0.0f;
     float x_current = 0.0f, y_current =0.0f, z_current =0.0f;
-    float angle1 = 0.0f, angle2 = 0.0f, angle3 =0.0f;
+    float angle_start = 0.0f, angle_current = 0.0f;
 
     Object(){};
     void Create(const char *pathname, char* filename,float x = 0.0f, float y = 0.0f, float z = 0.0f, bool pickable = false){
@@ -61,7 +61,6 @@ public:
     }
 
     void prepareObject(ShaderProgram *shaderProgram) {
-        cout<<"1";
         bufVertices=makeBuffer(vertices, vertexCount, sizeof(float)*4);
         bufNormals=makeBuffer(normals, vertexCount, sizeof(float)*4);
         bufTexCoords=makeBuffer(texCoords, vertexCount, sizeof(float)*2);
@@ -69,13 +68,11 @@ public:
 
         glBindVertexArray(vao);
 
-        cout<<"1";
         assignVBOtoAttribute(shaderProgram,"vertex",bufVertices,4);
         assignVBOtoAttribute(shaderProgram,"normal",bufNormals,4);
         assignVBOtoAttribute(shaderProgram,"texCoord0",bufTexCoords,2);
         glBindVertexArray(0);
 
-        cout<<"1";
         glGenTextures(1,&texture);
         readTexture(texturename, texture);
     }
@@ -99,6 +96,13 @@ public:
         x_current = x;
         y_current = y;
         z_current = z;
+        M = glm::mat4(1.0f);
+        M = glm::translate(M,vec3(x,y,z));
+    }
+
+    void rotateM(float angle, vec3 vec3v){
+        angle_current=angle;
+        M = glm::rotate(M, angle, vec3v);
     }
 
     GLuint readTexture(char* filename, GLuint texture) {

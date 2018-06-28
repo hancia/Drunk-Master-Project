@@ -28,9 +28,6 @@ glm::vec3 cameraPos   = glm::vec3(0.0f, 15.0f, -3.0f);
 glm::vec3 cameraFront = glm::vec3(0.0f, 0.0f, -1.0f);
 glm::vec3 cameraUp    = glm::vec3(0.0f, 1.0f, 0.0f);
 
-float bottle_y = 1.0f,new_y=15.0f,frames=600,current_y=bottle_y;
-float goal_angle = PI/1.5f, start_angle = 0, current_angle = start_angle;
-
 bool firstMouse = true;
 float yaw1   = -90.0f;
 float pitch1 =  0.0f;
@@ -48,11 +45,15 @@ float eye_y = 0;
 
 float aspect=1;
 
+float drunk_level = 0;
+
 const int n = 50;
 Object objectsArray[n];
 
-double fRand(double fMin, double fMax)
-{
+int animationStep = 0, animated_bottle_id=-1;
+float new_y, frames=200;
+
+double fRand(double fMin, double fMax){
     double f = (double)rand() / RAND_MAX;
     return fMin + f * (fMax - fMin);
 }
@@ -77,12 +78,11 @@ void initOpenGLProgram(GLFWwindow* window) {
 
     for(int i=0;i<n;i++){
         objectsArray[i].shaderProgram=new ShaderProgram("vshader.glsl",NULL,"fshader.glsl");
-        objectsArray[i].prepareObject(objectsArray[0].shaderProgram);
+        objectsArray[i].prepareObject(objectsArray[i].shaderProgram);
     }
 }
 
-void mouse_callback(GLFWwindow* window, double xpos, double ypos)
-{
+void mouse_callback(GLFWwindow* window, double xpos, double ypos){
     if (firstMouse)
     {
         lastX = xpos;
@@ -95,7 +95,9 @@ void mouse_callback(GLFWwindow* window, double xpos, double ypos)
     lastX = xpos;
     lastY = ypos;
 
-    float sensitivity = 0.1*fRand(-1,3);
+    float sensitivity = 0.1;
+
+    if(drunk_level>0) sensitivity = fRand(-1*drunk_level*0.2,drunk_level*0.2)+0.5*(1+drunk_level);
     xoffset *= sensitivity;
     yoffset *= sensitivity;
 
@@ -114,20 +116,25 @@ void mouse_callback(GLFWwindow* window, double xpos, double ypos)
     cameraFront = glm::normalize(front);
 }
 
-void processInput(GLFWwindow *window)
-{
-    if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
-        glfwSetWindowShouldClose(window, true);
-
-    float cameraSpeed = 15 * deltaTime;
-    if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
-        cameraPos += cameraSpeed * vec3(1.0f,0.0f,1.0f)*cameraFront;
-    if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
-        cameraPos -= cameraSpeed * vec3(1.0f,0.0f,1.0f)*cameraFront;
-    if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
-        cameraPos -= glm::normalize(glm::cross(cameraFront, cameraUp)) * cameraSpeed;
-    if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
-        cameraPos += glm::normalize(glm::cross(cameraFront, cameraUp)) * cameraSpeed;
+void animate(int id){
+    if(animationStep==1){
+            new_y = objectsArray[id].y_current + (cameraPos.y-objectsArray[id].y_start)/frames;
+            objectsArray[id].setPosition(objectsArray[id].x_current,new_y,objectsArray[id].z_current);
+            objectsArray[id].rotateM(objectsArray[id].angle_current+PI/2/frames,vec3(-1,0,0));
+            if(new_y>cameraPos.y){
+                animationStep++;
+                drunk_level++;
+            }
+        }
+    else if(animationStep==2){
+        new_y = objectsArray[id].y_current - (cameraPos.y-objectsArray[id].y_start)/frames;
+        if(new_y<objectsArray[id].y_start){
+            new_y=objectsArray[id].y_start;
+            animationStep=0;
+        }
+        objectsArray[id].setPosition(objectsArray[id].x_current,new_y,objectsArray[id].z_current);
+        objectsArray[id].rotateM(objectsArray[id].angle_current-PI/2/frames,vec3(-1,0,0));
+    }
 }
 
 void drawScene(GLFWwindow* window) {
@@ -135,26 +142,63 @@ void drawScene(GLFWwindow* window) {
 	glClear(GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT);
 
 	glm::mat4 P = glm::perspective(50 * PI / 180, aspect, 1.0f, 50.0f);
-	//cout<<cameraPos.x<<" "<<cameraPos.y<<" "<<cameraPos.y<<" "<<cameraFront.x<<" "<<cameraFront.y<<" "<<cameraFront.z<<" "<<cameraUp.x<<" "<<cameraUp.y<<" "<<cameraUp.z<<" "<<endl;
     glm::mat4 V = glm::lookAt(cameraPos,cameraPos+cameraFront, cameraUp);
+
+    if(animationStep)
+        animate(animated_bottle_id);
 
     for(int i=0;i<n;i++){
         objectsArray[i].drawObject(objectsArray[i].shaderProgram,P,V,i);
     }
-
-    if(current_y<new_y)current_y+=(new_y-bottle_y)/frames;
-    if(current_angle<goal_angle)current_angle+=(goal_angle-start_angle)/frames;
-
 	glfwSwapBuffers(window);
 }
 
-int main(void)
-{
+int getBottleId(){
+    for(int i=0;i<n;i++){
+        if(abs(objectsArray[i].x_start-cameraPos.x)+abs(objectsArray[i].z_start-cameraPos.z)<1 && objectsArray[i].is_pickable){
+            cout<<i<<" "<<objectsArray[i].x_start<<" "<<objectsArray[i].z_start<<endl;
+            return i;
+        }
+    }
+    return -1;
+}
+
+void tryPickUp(){
+    if(!animationStep){
+        cout<<"PickUp "<<cameraPos.x<<" "<<cameraPos.y<<" "<<cameraPos.z<<endl;
+        int id = getBottleId();
+        if(id!=-1){
+            animated_bottle_id=id;
+            cout<<id<<endl;
+            animationStep = 1;
+        }
+    }
+}
+
+void processInput(GLFWwindow *window){
+    if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
+        glfwSetWindowShouldClose(window, true);
+    if (glfwGetKey(window, GLFW_KEY_SPACE) == GLFW_PRESS)
+        tryPickUp();
+    if(!animationStep){
+        float cameraSpeed = 15 * deltaTime;
+        if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
+            cameraPos += cameraSpeed * vec3(1.0f,0.0f,1.0f)*cameraFront;
+        if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
+            cameraPos -= cameraSpeed * vec3(1.0f,0.0f,1.0f)*cameraFront;
+        if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
+            cameraPos -= glm::normalize(glm::cross(cameraFront, cameraUp)) * cameraSpeed;
+        if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
+            cameraPos += glm::normalize(glm::cross(cameraFront, cameraUp)) * cameraSpeed;
+    }
+}
+
+int main(void){
     srand( time( NULL ) );
     int counter=0;
     for(int i=0;i<n/5;i++){
         for(int j=0;j<5;j++){
-            objectsArray[counter].Create("bottle.obj", "glass.png",i*2,0,j*2);
+            objectsArray[counter].Create("bottle.obj", "glass.png",i*2,0,j*2, true);
             objectsArray[counter].vertexCount = objectsArray[counter].v_vertices.size();
             counter++;
         }
@@ -190,6 +234,8 @@ int main(void)
 	glfwSetTime(0);
 	while (!glfwWindowShouldClose(window))
 	{
+	    if(drunk_level>0)drunk_level-=1/frames/10;
+	    cout<<drunk_level<<endl;
         processInput(window);
         deltaTime = glfwGetTime();
 		glfwSetTime(0);
