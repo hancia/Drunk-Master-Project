@@ -48,9 +48,8 @@ float eye_y = 0;
 
 float aspect=1;
 
-
-Object butelka1("bottle.obj", "glass.png");
-Object butelka2("bottle.obj", "bricks.png");
+const int n = 50;
+Object objectsArray[n];
 
 double fRand(double fMin, double fMax)
 {
@@ -76,12 +75,10 @@ void initOpenGLProgram(GLFWwindow* window) {
 	glEnable(GL_DEPTH_TEST);
 	glfwSetFramebufferSizeCallback(window,windowResize);
 
-	butelka1.shaderProgram=new ShaderProgram("vshader.glsl",NULL,"fshader.glsl");
-	butelka2.shaderProgram=new ShaderProgram("vshader.glsl",NULL,"fshader.glsl");
-
-	butelka1.prepareObject(butelka1.shaderProgram);
-	butelka2.prepareObject(butelka2.shaderProgram);
-
+    for(int i=0;i<n;i++){
+        objectsArray[i].shaderProgram=new ShaderProgram("vshader.glsl",NULL,"fshader.glsl");
+        objectsArray[i].prepareObject(objectsArray[0].shaderProgram);
+    }
 }
 
 void mouse_callback(GLFWwindow* window, double xpos, double ypos)
@@ -141,23 +138,27 @@ void drawScene(GLFWwindow* window) {
 	//cout<<cameraPos.x<<" "<<cameraPos.y<<" "<<cameraPos.y<<" "<<cameraFront.x<<" "<<cameraFront.y<<" "<<cameraFront.z<<" "<<cameraUp.x<<" "<<cameraUp.y<<" "<<cameraUp.z<<" "<<endl;
     glm::mat4 V = glm::lookAt(cameraPos,cameraPos+cameraFront, cameraUp);
 
+    for(int i=0;i<n;i++){
+        objectsArray[i].drawObject(objectsArray[i].shaderProgram,P,V,i);
+    }
 
-	butelka1.drawObject(butelka1.shaderProgram,P,V,0);
-
-	butelka2.drawObject(butelka2.shaderProgram,P,V,1);
     if(current_y<new_y)current_y+=(new_y-bottle_y)/frames;
     if(current_angle<goal_angle)current_angle+=(goal_angle-start_angle)/frames;
 
 	glfwSwapBuffers(window);
-
 }
 
 int main(void)
 {
     srand( time( NULL ) );
-
-    butelka1.vertexCount = butelka1.v_vertices.size();
-    butelka2.vertexCount = butelka2.v_vertices.size();
+    int counter=0;
+    for(int i=0;i<n/5;i++){
+        for(int j=0;j<5;j++){
+            objectsArray[counter].Create("bottle.obj", "glass.png",i*2,0,j*2);
+            objectsArray[counter].vertexCount = objectsArray[counter].v_vertices.size();
+            counter++;
+        }
+    }
 
 	GLFWwindow* window;
 	glfwSetErrorCallback(error_callback);
@@ -196,8 +197,9 @@ int main(void)
 		glfwPollEvents();
 	}
 
-	butelka1.freeOpenGLProgram();
-    butelka2.freeOpenGLProgram();
+    for(int i=0;i<n;i++){
+        objectsArray[i].freeOpenGLProgram();
+    }
 
 	glfwDestroyWindow(window);
 	glfwTerminate();

@@ -30,12 +30,12 @@ public:
     bool wynik, is_pickable=0;
     char* texturename;
     glm::mat4 M;
-    float x_start = 0, y_start = 0, z_start = 0;
-    float x_current = 0, y_current = 0, z_current =0;
-    float angle1 = 0, angle2 = 0, angle3 =0;
+    float x_start = 0.0f, y_start = 0.0f, z_start = 0.0f;
+    float x_current = 0.0f, y_current =0.0f, z_current =0.0f;
+    float angle1 = 0.0f, angle2 = 0.0f, angle3 =0.0f;
 
     Object(){};
-    Object(const char *pathname, char* filename,float x = 0, float y = 0, float z = 0, bool pickable = false){
+    void Create(const char *pathname, char* filename,float x = 0.0f, float y = 0.0f, float z = 0.0f, bool pickable = false){
         M = glm::mat4(1.0f);
         x_start = x;
         y_start = y;
@@ -44,6 +44,8 @@ public:
         x_current = x_start;
         y_current = y_start;
         z_current = z_start;
+
+        M = glm::translate(M,vec3(x,y,z));
 
         is_pickable = pickable;
 
@@ -79,9 +81,6 @@ public:
     }
 
     void drawObject(ShaderProgram *shaderProgram, mat4 mP, mat4 mV,int n) {
-        M = glm::translate(M,vec3(x_current,y_current,z_current));
-        M = glm::rotate(M, angle1, glm::vec3(-1, 0, 0));
-
         shaderProgram->use();
 
         glUniformMatrix4fv(shaderProgram->getUniformLocation("P"),1, false, glm::value_ptr(mP));
