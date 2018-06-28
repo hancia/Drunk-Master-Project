@@ -159,7 +159,7 @@ int getBottleId(){
     float error=999999,min_error=999999;
     int id=-1;
     for(int i=0;i<n;i++){
-        error=abs(objectsArray[i].x_start-cameraPos.x)+abs(objectsArray[i].z_start-cameraPos.z);
+        error=abs(objectsArray[i].x_start-cameraPos.x+1)+abs(objectsArray[i].z_start-cameraPos.z+1);
         if(error<min_error && objectsArray[i].is_pickable){
             min_error=error;
             id=i;
