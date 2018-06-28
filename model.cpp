@@ -11,6 +11,7 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <stdlib.h>
 #include <stdio.h>
+#include <string>
 #include "lodepng.h"
 #include "shaderprogram.h"
 #include "objLoader.h"
@@ -28,14 +29,14 @@ public:
     float *vertices, *normals, *texCoords;
     int vertexCount;
     bool wynik, is_pickable=0;
-    char* texturename;
+    string texturename;
     glm::mat4 M;
     float x_start = 0.0f, y_start = 0.0f, z_start = 0.0f;
     float x_current = 0.0f, y_current =0.0f, z_current =0.0f;
     float angle_start = 0.0f, angle_current = 0.0f;
 
     Object(){};
-    void Create(const char *pathname, char* filename,float x = 0.0f, float y = 0.0f, float z = 0.0f, bool pickable = false){
+    void Create(const char *pathname, string filename,float x = 0.0f, float y = 0.0f, float z = 0.0f, float scalex=1,float scaley=1,float scalez=1, bool pickable = false){
         M = glm::mat4(1.0f);
         x_start = x;
         y_start = y;
@@ -49,12 +50,12 @@ public:
 
         is_pickable = pickable;
 
-        load(pathname);
+        load(pathname,scalex,scaley,scalez);
         texturename=filename;
     };
 
-    void load(const char* pathname){
-        wynik = loadOBJ(pathname,v_vertices,v_uvs,v_normals);
+    void load(const char* pathname, float scalex, float scaley, float scalez){
+        wynik = loadOBJ(pathname,v_vertices,v_uvs,v_normals,scalex,scaley,scalez);
         vertices = static_cast<float*>(glm::value_ptr(v_vertices.front()));
         normals = static_cast<float*>(glm::value_ptr(v_normals.front()));
         texCoords = static_cast<float*>(glm::value_ptr(v_uvs.front()));
@@ -77,12 +78,13 @@ public:
         readTexture(texturename, texture);
     }
 
-    void drawObject(ShaderProgram *shaderProgram, mat4 mP, mat4 mV,int n) {
+    void drawObject(ShaderProgram *shaderProgram, mat4 mP, mat4 mV,int n, vec3 cameraPos) {
         shaderProgram->use();
 
         glUniformMatrix4fv(shaderProgram->getUniformLocation("P"),1, false, glm::value_ptr(mP));
         glUniformMatrix4fv(shaderProgram->getUniformLocation("V"),1, false, glm::value_ptr(mV));
         glUniformMatrix4fv(shaderProgram->getUniformLocation("M"),1, false, glm::value_ptr(M));
+	   // glUniform4fv(shaderProgram->getUniformLocation("lp"),1,glm::value_ptr(vec4(cameraPos.x*0.5,cameraPos.y,cameraPos.z*0.5,-1)));
 
         glActiveTexture(GL_TEXTURE0);
         glBindTexture(GL_TEXTURE_2D,texture);
@@ -105,7 +107,7 @@ public:
         M = glm::rotate(M, angle, vec3v);
     }
 
-    GLuint readTexture(char* filename, GLuint texture) {
+    GLuint readTexture(string filename, GLuint texture) {
         glActiveTexture(GL_TEXTURE0);
         std::vector<unsigned char> image;
         unsigned width, height;

@@ -11,6 +11,8 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <stdlib.h>
 #include <stdio.h>
+#include <string>
+#include <vector>
 #include "lodepng.h"
 #include "shaderprogram.h"
 #include "objLoader.h"
@@ -47,7 +49,7 @@ float aspect=1;
 
 float drunk_level = 0;
 
-const int n = 50;
+const int n = 16;
 Object objectsArray[n];
 
 int animationStep = 0, animated_bottle_id=-1;
@@ -72,7 +74,7 @@ void windowResize(GLFWwindow* window, int width, int height) {
 }
 
 void initOpenGLProgram(GLFWwindow* window) {
-	glClearColor(0, 0, 0, 1);
+	glClearColor(1,1,1,1);
 	glEnable(GL_DEPTH_TEST);
 	glfwSetFramebufferSizeCallback(window,windowResize);
 
@@ -148,40 +150,42 @@ void drawScene(GLFWwindow* window) {
         animate(animated_bottle_id);
 
     for(int i=0;i<n;i++){
-        objectsArray[i].drawObject(objectsArray[i].shaderProgram,P,V,i);
+        objectsArray[i].drawObject(objectsArray[i].shaderProgram,P,V,i,cameraPos);
     }
 	glfwSwapBuffers(window);
 }
 
 int getBottleId(){
+    float error=999999,min_error=999999;
+    int id=-1;
     for(int i=0;i<n;i++){
-        if(abs(objectsArray[i].x_start-cameraPos.x)+abs(objectsArray[i].z_start-cameraPos.z)<1 && objectsArray[i].is_pickable){
-            cout<<i<<" "<<objectsArray[i].x_start<<" "<<objectsArray[i].z_start<<endl;
-            return i;
+        error=abs(objectsArray[i].x_start-cameraPos.x)+abs(objectsArray[i].z_start-cameraPos.z);
+        if(error<min_error && objectsArray[i].is_pickable){
+            min_error=error;
+            id=i;
         }
     }
-    return -1;
+    return min_error > 5 ? -1 : id;
 }
 
 void tryPickUp(){
-    if(!animationStep){
-        cout<<"PickUp "<<cameraPos.x<<" "<<cameraPos.y<<" "<<cameraPos.z<<endl;
-        int id = getBottleId();
-        if(id!=-1){
-            animated_bottle_id=id;
-            cout<<id<<endl;
-            animationStep = 1;
-        }
+    int id = getBottleId();
+    if(id!=-1){
+        animated_bottle_id=id;
+        animationStep = 1;
     }
 }
 
 void processInput(GLFWwindow *window){
     if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
         glfwSetWindowShouldClose(window, true);
-    if (glfwGetKey(window, GLFW_KEY_SPACE) == GLFW_PRESS)
-        tryPickUp();
+
     if(!animationStep){
+        if (glfwGetKey(window, GLFW_KEY_SPACE) == GLFW_PRESS)
+            tryPickUp();
+
         float cameraSpeed = 15 * deltaTime;
+        vec3 temp = cameraPos;
         if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
             cameraPos += cameraSpeed * vec3(1.0f,0.0f,1.0f)*cameraFront;
         if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
@@ -190,18 +194,51 @@ void processInput(GLFWwindow *window){
             cameraPos -= glm::normalize(glm::cross(cameraFront, cameraUp)) * cameraSpeed;
         if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
             cameraPos += glm::normalize(glm::cross(cameraFront, cameraUp)) * cameraSpeed;
+        if (glfwGetKey(window, GLFW_KEY_Q) == GLFW_PRESS)
+            cout<<cameraPos.x<<" "<<cameraPos.z<<endl;
+
+        if(abs(cameraPos.x)>16 || abs(cameraPos.z)>16)
+            cameraPos = temp;
     }
 }
 
 int main(void){
     srand( time( NULL ) );
-    int counter=0;
-    for(int i=0;i<n/5;i++){
-        for(int j=0;j<5;j++){
-            objectsArray[counter].Create("bottle.obj", "glass.png",i*2,0,j*2, true);
-            objectsArray[counter].vertexCount = objectsArray[counter].v_vertices.size();
-            counter++;
-        }
+    vector <string> tex;
+    string temp="glassX.png";
+    for(int i=0;i<=9;i++){
+        temp[5] = i + '0';
+        tex.push_back(temp);
+    }
+    cout<<tex[0]<<endl;
+    for(int i=0;i+6<11;i++){
+        objectsArray[i+6].Create("bottle.obj", tex[rand()%tex.size()],0+i*3,10,18,0.35,0.35,0.35,true);
+    }
+    for(int i=0;i+11<n;i++){
+        objectsArray[i+11].Create("kieliszek.obj", tex[rand()%tex.size()],-15+3*i,7,18,0.3,0.3,0.3, true);
+    }
+
+    objectsArray[0].Create("bar.obj","czarny.png",0,0,18,2,6,4);
+    objectsArray[0].rotateM(PI/2,vec3(0,1,0));
+
+    objectsArray[1].Create("wall.obj","ctroj.png",0,0,0,10,10,10);//podloga
+
+    objectsArray[3].Create("wall.obj","pink.png",0,5,-20,10,5,5);//sciana
+    objectsArray[3].rotateM(PI/2,vec3(1,0,0));
+
+    objectsArray[2].Create("wall.obj","pink.png",0,5,20,10,5,5);//sciana
+    objectsArray[2].rotateM(PI/2,vec3(-1,0,0));
+
+    objectsArray[4].Create("wall.obj","glass7.png",20,5,0,10,5,5);//sciana
+    objectsArray[4].rotateM(PI/2,vec3(-1,0,0));
+    objectsArray[4].rotateM(PI/2,vec3(0,0,1));
+
+    objectsArray[5].Create("wall.obj","glass7.png",-20,5,0,10,5,5);//sciana
+    objectsArray[5].rotateM(PI/2,vec3(-1,0,0));
+    objectsArray[5].rotateM(PI/2,vec3(0,0,-1));
+
+    for(int i=0;i<n;i++){
+        objectsArray[i].vertexCount = objectsArray[i].v_vertices.size();
     }
 
 	GLFWwindow* window;
@@ -226,7 +263,7 @@ int main(void){
 	glfwMakeContextCurrent(window);
 	glfwSwapInterval(1);
 
-	if (glewInit() != GLEW_OK) { //Zainicjuj bibliotekę GLEW
+	if (glewInit() != GLEW_OK) {
 		fprintf(stderr, "Nie można zainicjować GLEW.\n");
 		exit(EXIT_FAILURE);
 	}
@@ -235,7 +272,6 @@ int main(void){
 	while (!glfwWindowShouldClose(window))
 	{
 	    if(drunk_level>0)drunk_level-=1/frames/10;
-	    cout<<drunk_level<<endl;
         processInput(window);
         deltaTime = glfwGetTime();
 		glfwSetTime(0);
