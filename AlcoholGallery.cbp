@@ -50,6 +50,7 @@
 		<Unit filename="lodepng.cpp" />
 		<Unit filename="lodepng.h" />
 		<Unit filename="main_file.cpp" />
+		<Unit filename="model.cpp" />
 		<Unit filename="objLoader.cpp" />
 		<Unit filename="objLoader.h" />
 		<Unit filename="shaderprogram.cpp" />
